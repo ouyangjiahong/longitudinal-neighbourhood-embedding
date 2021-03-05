@@ -4,8 +4,6 @@ import pdb
 from glob import glob
 import torch
 from torch.nn.parameter import Parameter
-import torchvision
-import torchvision.models as models
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.parallel
@@ -13,14 +11,8 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import scipy.misc as sci
 import scipy.ndimage
-import pickle
 import shutil
-import skimage
-import skimage.io
-import skimage.transform
-import skimage.color
-from skimage.measure import compare_nrmse, compare_psnr, compare_ssim
-import skimage.metrics
+from skimage.measure import compare_psnr, compare_ssim
 import sklearn.metrics
 import matplotlib as mpl
 import nibabel as nib

@@ -7,7 +7,6 @@ import numpy as np
 import yaml
 import pdb
 import tqdm
-import psutil
 from model import *
 from util import *
 
