@@ -1,5 +1,5 @@
 # longitudinal-neighbourhood-embedding
-Self-supervised Longitudinal Neighbourhood Embedding (LNE), Submitted to MICCAI2021
+Self-supervised Longitudinal Neighbourhood Embedding (LNE), Submitted to MICCAI2021.
 
 ### Dependency
 conda env create -f requirement.yml
@@ -15,3 +15,6 @@ run <code>python main.py</code>
 change parameters in config.yml \
 For setting _use_feature: ['z'], data_type: single_,  run <code>python main_classification_single.py</code> \
 For setting _use_feature: ['z', 'delta_z'], data_type: pair_,  run <code>python main_classification_pair.py</code>
+
+### Visualization
+see visualization.ipynb for more details.
