@@ -4,7 +4,14 @@ Self-supervised Longitudinal Neighbourhood Embedding (LNE), Submitted to MICCAI2
 ### Dependency
 conda env create -f requirement.yml
 
-### self-supervised models
-change parameters in config.yml, and run <code>python main.py</code>
+### Data Preprocessing
+data_preprocessing_ADNI.py and data_preprocessing_LAB.py save images and other information in h5 files.
 
+### Self-supervised models
+change parameters in config.yml (default setting is training LNE)
+run <code>python main.py</code>
 
+### Downstream classification / regression
+change parameters in config.yml
+For setting <code>use_feature: ['z'], data_type: single</code>,  run <code>python main_classification_single.py</code>
+For setting <code>use_feature: ['z', 'delta_z'], data_type: pair</code>,  run <code>python main_classification_pair.py</code>
