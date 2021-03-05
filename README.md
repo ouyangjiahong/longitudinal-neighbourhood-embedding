@@ -13,5 +13,5 @@ run <code>python main.py</code>
 
 ### Downstream classification / regression
 change parameters in config.yml
-For setting <code>use_feature: ['z'], data_type: single</code>,  run <code>python main_classification_single.py</code>
-For setting <code>use_feature: ['z', 'delta_z'], data_type: pair</code>,  run <code>python main_classification_pair.py</code>
+For setting _use_feature: ['z'], data_type: single_,  run <code>python main_classification_single.py</code>
+For setting _use_feature: ['z', 'delta_z'], data_type: pair_,  run <code>python main_classification_pair.py</code>
