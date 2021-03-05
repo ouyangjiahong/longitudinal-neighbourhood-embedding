@@ -1,0 +1,63 @@
+
+phase: 'train'
+# phase: 'test'
+load_yaml: True
+gpu: '1'
+
+# pretraining setting
+continue_train: False
+# continue_train: True
+ckpt_name: 'model_best.pth.tar'
+
+# dataset
+data_type: 'pair'
+# data_type: 'single'
+dataset_name: 'ADNI'
+data_path: '../data/ADNI/'
+img_file_name: 'ADNI_longitudinal_img_aug.h5'
+noimg_file_name: 'ADNI_longitudinal_noimg.h5'
+subj_list_postfix: 'NC_AD_pMCI_sMCI'
+# subj_list_postfix: 'NC_AD'
+# subj_list_postfix: 'pMCI_sMCI'
+
+# data_type: 'pair'
+# dataset_name: 'LAB'
+# data_path: '../data/LAB/'
+# img_file_name: 'LAB_longitudinal_img_aug.h5'
+# noimg_file_name: 'LAB_longitudinal_noimg.h5'
+# # subj_list_postfix: 'C_single'
+# subj_list_postfix: 'C'
+
+# training setting
+epochs: 50
+batch_size: 64
+num_fold: 5
+fold: 0
+shuffle: True
+lr: 0.0001
+aug: True
+use_feature: ['z', 'delta_z']
+# use_feature: ['z']
+pos_weight: [1.4]
+# froze_encoder: True
+froze_encoder: False
+
+# model setting
+latent_size: 1024
+num_neighbours: 5
+agg_method: 'gaussian'
+
+# model_name: 'AE'
+# model_name: 'VAE'
+# model_name: 'LSSL'
+model_name: 'LSP'       # longitudinal social pooling
+# model_name: 'CLS'       # encoder + classifier
+lambda_recon: 2.
+lambda_dir: 1.
+lambda_dis: 0.
+lambda_cls: 0.
+lambda_kl: 0.
+
+
+# LSP
+ckpt_timelabel: '2021_2_1_10_3'         # bs=64, latent=1024, neighbour=5, recon=2, dir=1, dis=0
