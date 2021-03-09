@@ -370,8 +370,10 @@ class LSP(nn.Module):
             for j in range(i+1, bs):
                 dis_mx[i, j] = torch.sum((z1[i] - z1[j]) ** 2)
                 dis_mx[j, i] = dis_mx[i, j]
+        sigma = (torch.sort(dis_mx)[0][:,-1])**0.5 - (torch.sort(dis_mx)[0][:,1])**0.5
         if self.agg_method == 'gaussian':
-            adj_mx = torch.exp(-dis_mx/100)
+            # adj_mx = torch.exp(-dis_mx/100)
+            adj_mx = torch.exp(-dis_mx / (2*sigma**2))
         if self.num_neighbours < bs:
             adj_mx_filter = torch.zeros(bs, bs).to(self.gpu)
             for i in range(bs):
@@ -391,8 +393,10 @@ class LSP(nn.Module):
         for i in range(bs):
             for j in range(ds):
                 dis_mx[i, j] = torch.sum((z1[i] - z1_all[j]) ** 2)
+        sigma = (torch.sort(dis_mx)[0][:,-1])**0.5 - (torch.sort(dis_mx)[0][:,1])**0.5
         if self.agg_method == 'gaussian':
-            adj_mx = torch.exp(-dis_mx/100)
+            # adj_mx = torch.exp(-dis_mx/100)
+            adj_mx = torch.exp(-dis_mx / (2*sigma**2))
         if self.num_neighbours < bs:
             adj_mx_filter = torch.zeros(bs, ds).to(self.gpu)
             for i in range(bs):
