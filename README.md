@@ -2,7 +2,6 @@
 Self-supervised Longitudinal Neighbourhood Embedding (LNE), Accepted by MICCAI2021.
 [paper](https://arxiv.org/abs/2103.03840)
 
-NOTE: The code for our MEDIA extension will be updated here by July 20, 2022.
 
 ### Dependency
 conda env create -f requirement.yml
