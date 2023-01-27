@@ -1,0 +1,83 @@
+
+phase: 'train'
+# phase: 'test'
+load_yaml: True
+gpu: '2'
+
+# pretraining setting
+continue_train: False
+# continue_train: True
+ckpt_name: 'model_best.pth.tar'
+
+# dataset
+data_type: 'pair'
+# data_type: 'single'
+dataset_name: 'ADNI'
+# data_path: '../data/ADNI/'
+data_path: '../../longitudinal-social-pooling/data/ADNI/'
+img_file_name: 'ADNI_longitudinal_img_aug.h5'
+noimg_file_name: 'ADNI_longitudinal_noimg.h5'
+subj_list_postfix: 'NC_AD_pMCI_sMCI'
+# subj_list_postfix: 'NC_AD'
+# subj_list_postfix: 'pMCI_sMCI'
+
+# data_type: 'pair'
+# dataset_name: 'LAB'
+# # data_path: '../data/LAB/'
+# data_path: '../../longitudinal-social-pooling/data/LAB/'
+# img_file_name: 'LAB_longitudinal_img_aug.h5'
+# noimg_file_name: 'LAB_longitudinal_noimg.h5'
+# # subj_list_postfix: 'C_single'
+# subj_list_postfix: 'C'
+# # subj_list_postfix: 'C_E_HE'
+
+# data_type: 'pair'
+# dataset_name: 'NCANDA'
+# data_path: '../data/NCANDA/'
+# img_file_name: 'NCANDA_longitudinal_img_aug.h5'
+# noimg_file_name: 'NCANDA_longitudinal_noimg.h5'
+# subj_list_postfix: 'all'
+
+# training setting
+epochs: 50
+batch_size: 64
+num_fold: 5
+fold: 0
+shuffle: True
+lr: 0.0001
+aug: False
+
+# model setting
+latent_size: 1024
+num_neighbours: 5
+agg_method: 'gaussian'
+N_km: [120, 60, 30]
+# N_km: [6, 3]
+postpone_proto: 20
+
+# model_name: 'AE'
+# model_name: 'VAE'
+# model_name: 'LSSL'
+model_name: 'LSP'       # longitudinal social pooling
+lambda_recon: 2.
+lambda_dir: 1.
+lambda_dis: 0.
+lambda_cls: 0.
+lambda_kl: 0.
+lambda_nce: 0.
+lambda_proto: 1.
+
+
+# LSP
+
+# ckpt_timelabel: '2022_1_10_23_59'           # LAB-C_E_HE, LSP, recon=2, dir=1, 322477
+# ckpt_timelabel: '2022_1_11_8_59'           # ADNI-all, LSP, recon=2, dir=1, nce=0.01, 358244
+
+# ckpt_timelabel: '2022_2_13_20_17'         # ADNI-all, AE, recon=2, 307108, gpu0
+# ckpt_timelabel: '2022_2_13_20_15'         # ADNI-all, LSP, recon=2, dir=1, 7029, gpu0
+
+# ckpt_timelabel: '2022_2_13_20_19'         # LAB-C, AE, recon=2, 307292, gpu1
+# ckpt_timelabel: '2022_2_13_20_21'         # LAB-C, LSP, recon=2, dir=1, 307490, gpu1
+
+ckpt_timelabel: '2022_2_13_20_23'            # NCANDA-all, AE, recon=2, 307680, gpu2
+# ckpt_timelabel: '2022_1_10_22_15'          # NCANDA-all, LSP, recon=2, dir=1

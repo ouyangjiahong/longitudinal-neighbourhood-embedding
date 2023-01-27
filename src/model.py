@@ -3,6 +3,7 @@ from torch.nn.parameter import Parameter
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import math
 
 import pdb
 
@@ -237,18 +238,23 @@ class CLS(nn.Module):
         z1 = self.encoder(img1)
         z1 = z1.view(img1.shape[0], -1)
         pred = self.classifier(z1)
-        return pred
+        return pred, z1
 
-    def compute_classification_loss(self, pred, label, pos_weight=torch.tensor([2.]), postfix='NC_AD'):
-        if postfix == 'C_single':
+    def compute_classification_loss(self, pred, label, pos_weight=torch.tensor([2.]), dataset_name='ADNI', postfix='NC_AD', task='classification'):
+        if task == 'age':
             loss = nn.MSELoss()(pred.squeeze(1), label)
             return loss, pred
         else:
-            if  'NC_AD' in postfix:
-                label = label / 2
-            elif 'pMCI_sMCI' in postfix:
-                label = label - 3
-            elif 'C_E_HE' in postfix:
+            # pdb.set_trace()
+            if dataset_name == 'ADNI':
+                if  'NC_AD' in postfix:
+                    label = label / 2
+                elif 'pMCI_sMCI' in postfix:
+                    label = label - 3
+            elif dataset_name == 'LAB':
+                if 'C_E_HE' in postfix:
+                    label = (label > 0).double()
+            elif dataset_name == 'NCANDA':
                 label = (label > 0).double()
             else:
                 raise ValueError('Not support!')
@@ -340,7 +346,7 @@ class LSSL(nn.Module):
         return (1. - cos).mean()
 
 class LSP(nn.Module):
-    def __init__(self, model_name='LSP', latent_size=1024, num_neighbours=3, agg_method='gaussain', gpu=None):
+    def __init__(self, model_name='LSP', latent_size=1024, num_neighbours=3, agg_method='gaussain', N_km=[120,60,30], gpu=None):
         super(LSP, self).__init__()
         self.model_name = model_name
         self.encoder = Encoder(in_num_ch=1, inter_num_ch=16, num_conv=1)
@@ -351,6 +357,7 @@ class LSP(nn.Module):
             self.mapping = nn.Sequential()
         self.num_neighbours = num_neighbours
         self.agg_method = agg_method
+        self.N_km = N_km
         self.gpu = gpu
 
     def forward(self, img1, img2, interval):
@@ -372,8 +379,9 @@ class LSP(nn.Module):
                 dis_mx[j, i] = dis_mx[i, j]
         sigma = (torch.sort(dis_mx)[0][:,-1])**0.5 - (torch.sort(dis_mx)[0][:,1])**0.5
         if self.agg_method == 'gaussian':
-            # adj_mx = torch.exp(-dis_mx/100)
-            adj_mx = torch.exp(-dis_mx / (2*sigma**2))
+            adj_mx = torch.exp(-dis_mx/100)
+            # adj_mx = torch.exp(-dis_mx / (2*sigma**2))
+        # pdb.set_trace()
         if self.num_neighbours < bs:
             adj_mx_filter = torch.zeros(bs, bs).to(self.gpu)
             for i in range(bs):
@@ -395,8 +403,8 @@ class LSP(nn.Module):
                 dis_mx[i, j] = torch.sum((z1[i] - z1_all[j]) ** 2)
         sigma = (torch.sort(dis_mx)[0][:,-1])**0.5 - (torch.sort(dis_mx)[0][:,1])**0.5
         if self.agg_method == 'gaussian':
-            # adj_mx = torch.exp(-dis_mx/100)
-            adj_mx = torch.exp(-dis_mx / (2*sigma**2))
+            adj_mx = torch.exp(-dis_mx/100)
+            # adj_mx = torch.exp(-dis_mx / (2*sigma**2))
         if self.num_neighbours < bs:
             adj_mx_filter = torch.zeros(bs, ds).to(self.gpu)
             for i in range(bs):
@@ -436,3 +444,41 @@ class LSP(nn.Module):
         delta_z_norm = torch.norm(delta_z, dim=1) + 1e-12
         dis = torch.norm(delta_z - delta_h, dim=1)
         return (dis / delta_z_norm).mean()
+
+    # multi-instance infoNCE loss
+    def compute_multi_instance_NCE(self, z1, adj_mx):
+        pdb.set_trace()
+        ztz = torch.matmul(z1, z1.T)    # (bs, bs)
+        select_idx = torch.argsort(adj_mx, dim=1, descending=True)[:, :self.num_neighbours]
+        ztz_pos = torch.gather(ztz, dim=1, index=select_idx)
+        nominator = torch.logsumexp(ztz_pos, dim=1)
+        denominator = torch.logsumexp(ztz, dim=1)
+        loss = -(nominator - denominator).mean()
+        return loss
+
+    def update_kmeans(self, z1_list, cluster_ids_list, cluster_centers_list):
+        z1_list = torch.tensor(z1_list).to(self.gpu)
+        self.prototype_list = [torch.tensor(c).to(self.gpu) for c in cluster_centers_list]
+        self.concentration_list = []
+        for m in range(len(self.N_km)):         # for each round of kmeans
+            prototypes = self.prototype_list[m]
+            cluster_ids = cluster_ids_list[m]
+            concentration_m = []
+            for c in range(self.N_km[m]):       # for each cluster center
+                zs = z1_list[cluster_ids == c]
+                n_c = zs.shape[0]
+                norm = torch.norm(zs - prototypes[c].view(1,-1), dim=1).sum()
+                concentration = norm / (n_c * math.log(n_c + 10))
+                concentration_m.append(concentration)
+            self.concentration_list.append(torch.tensor(concentration_m).to(self.gpu))
+
+    # prototype NCE loss
+    def compute_prototype_NCE(self, z1, cluster_ids):
+        loss = 0
+        for m in range(len(self.N_km)):         # for each round of kmeans
+            prototypes_sel = self.prototype_list[m][cluster_ids[:, m].detach().cpu().numpy()]
+            concentration_sel = self.concentration_list[m][cluster_ids[:, m].detach().cpu().numpy()]
+            nominator = torch.sum(z1 * prototypes_sel / concentration_sel.view(-1,1), 1)
+            denominator = torch.logsumexp(torch.matmul(z1, torch.transpose(self.prototype_list[m], 0, 1)) / self.concentration_list[m].view(1,self.N_km[m]), dim=1)
+            loss += -(nominator - denominator).mean()
+        return loss / (len(self.N_km)*z1.shape[0])
