@@ -196,7 +196,8 @@ class LongitudinalData(object):
             raise ValueError('Not support this dataset!')
 
         self.trainLoader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
-        self.valLoader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        self.valLoader = DataLoader(self.val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        # self.valLoader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
         self.testLoader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
     def load_idx_list(self, file_path, data_type):

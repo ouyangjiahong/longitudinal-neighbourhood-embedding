@@ -346,7 +346,7 @@ class LSSL(nn.Module):
         return (1. - cos).mean()
 
 class LSP(nn.Module):
-    def __init__(self, model_name='LSP', latent_size=1024, num_neighbours=3, agg_method='gaussain', N_km=[120,60,30], gpu=None):
+    def __init__(self, model_name='LSP', latent_size=1024, num_neighbours=3, agg_method='gaussian', N_km=[120,60,30], gpu=None):
         super(LSP, self).__init__()
         self.model_name = model_name
         self.encoder = Encoder(in_num_ch=1, inter_num_ch=16, num_conv=1)
